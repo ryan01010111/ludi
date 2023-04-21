@@ -20,5 +20,7 @@ module.exports = {
   plugins: [
   ],
   rules: {
+    'arrow-parens': 'off',
+    'max-len': ['error', { code: 100 }],
   },
 };

@@ -1,13 +1,13 @@
 #search-page {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     flex: 1;
-    padding: 0 10vw;
+    padding: 0 15vw 0 10vw;
 }
 
 #search-form {
     display: flex;
-    justify-content: flex-start;
     margin: 20px 0;
 }
 
@@ -15,73 +15,7 @@
     display: flex;
     flex-direction: column;
     margin: 40px 0;
-    padding: 20px 40px;
+    padding: 40px 60px;
     border-radius: 20px;
     box-shadow: 5px 1px 15px 0 #868eaf;
-}
-
-.event-item {
-    display: flex;
-    height: 260px;
-    border: 1px solid #868eaf;
-}
-
-.event-item-left,
-.event-item-right {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
-
-.event-item-left {
-    justify-content: space-between;
-    margin: 0 8px 0 0;
-}
-
-.event-item-right {
-    margin: 0 0 0 8px;
-}
-
-
-.event-img {
-    flex: 1;
-    background-color: #444;
-}
-
-.event-title {
-    font-size: 1.2em;
-    font-weight: 600;
-    color: transparent;
-    text-shadow: 0px 8px 8px rgba(255, 255, 255, 0.4);
-    background-color: #868eaf;
-    background-clip: text;
-}
-
-.event-description {
-    flex: 1;
-    background-color: #aaa;
-}
-
-.event-actions {
-    display: flex;
-    justify-content: center;
-    background-color: #ddd;
-}
-
-.event-actions button {
-    width: 160px;
-    padding: 16px 8px;
-    margin: 20px 24px;
-    border: none;
-    border-radius: 4px;
-    font-size: 1.2em;
-    font-weight: 700;
-    color: #fff;
-    background-color: #354998;
-}
-
-.event-actions button:hover {
-    cursor: pointer;
-    color: #354998;
-    background-color: #a0ff27;
 }
