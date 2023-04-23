@@ -22,5 +22,6 @@ module.exports = {
   rules: {
     'arrow-parens': 'off',
     'max-len': ['error', { code: 100 }],
+    'react/button-has-type': 'off',
   },
 };

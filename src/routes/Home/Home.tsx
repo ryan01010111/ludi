@@ -1,6 +1,6 @@
 import { Form } from 'react-router-dom';
 import './Home.css';
-import SearchBar from '../../components/forms/SearchBar';
+import TextInput from '../../components/forms/TextInput';
 
 export default function Home() {
   return (
@@ -13,7 +13,12 @@ export default function Home() {
       </h3>
 
       <Form id="home-search-form" action="search">
-        <SearchBar width="50vw" />
+        <TextInput
+          type="search"
+          name="q"
+          width="50vw"
+          placeholder="Search for events"
+        />
       </Form>
 
       <div id="home-trending">

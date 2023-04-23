@@ -1,6 +1,6 @@
 import { Form, LoaderFunction, useLoaderData } from 'react-router-dom';
 import { LoaderData } from '../../types';
-import SearchBar from '../../components/forms/SearchBar';
+import TextInput from '../../components/forms/TextInput';
 import './Search.css';
 import EventItem from './EventItem';
 
@@ -10,7 +10,13 @@ export default function Search() {
   return (
     <div id="search-page">
       <Form id="search-form" action="/search">
-        <SearchBar width="50vw" defaultValue={q} />
+        <TextInput
+          type="search"
+          name="q"
+          width="50vw"
+          placeholder="Search for events"
+          defaultValue={q}
+        />
       </Form>
 
       <div id="search-results">

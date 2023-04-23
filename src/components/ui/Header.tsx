@@ -15,11 +15,11 @@ export default function Header() {
 
       <nav>
         <ul>
-          <li><Link to="one">About Us</Link></li>
-          <li><Link to="two">Create an Event</Link></li>
+          <li><Link to="/login">About Us</Link></li>
+          <li><Link to="/login">Create an Event</Link></li>
           <li style={{ flex: 1 }} />
-          <li><Link to="three">Profile</Link></li>
-          <li><Link to="three">Login</Link></li>
+          <li><Link to="/login">Profile</Link></li>
+          <li><Link to="/login">Log in</Link></li>
         </ul>
       </nav>
     </header>
