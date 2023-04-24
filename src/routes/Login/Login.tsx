@@ -3,14 +3,15 @@ import {
   ActionFunction, Form, Link, useActionData, useNavigate,
 } from 'react-router-dom';
 import { Icon } from '@iconify/react';
-import { AuthContext } from '../../contexts/AuthContext';
+import { LoginFunc } from '../../contexts/AuthContext';
 import TextInput from '../../components/forms/TextInput';
 import Button from '../../components/Button';
+import { ActionData } from '../../types';
 import './Login.css';
 
 export default function Login() {
   const navigate = useNavigate();
-  const actionData: any = useActionData();
+  const actionData = useActionData() as ActionData<typeof action>;
 
   useEffect(() => {
     // TODO: go to prev URL if appropriate
@@ -57,19 +58,22 @@ export default function Login() {
         {' '}
         yet?
         {' '}
-        <Link to="/signup">Sign up</Link>
+        <Link to="/sign-up">Sign up</Link>
       </p>
     </div>
   );
 }
 
-type LoginAction = (login: AuthContext['login']) => ActionFunction;
-
-export const action: LoginAction = login => async ({ request }) => {
+export const action = (
+  login: LoginFunc,
+) => async ({ request }: Parameters<ActionFunction>[0]) => {
   const formData = await request.formData();
   const emailAddress = formData.get('emailAddress')?.toString();
   const password = formData.get('password')?.toString();
-  if (!emailAddress || !password) throw new Error('missing param(s)');
+  if (!emailAddress || !password) {
+    // TODO
+    throw new Error('missing param(s)');
+  }
   await login({ emailAddress, password });
 
   const rememberMe = formData.get('rememberMe')?.toString();

@@ -1,0 +1,50 @@
+#sign-up-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 15vw;
+}
+
+#sign-up-title {
+    display: flex;
+    margin: 60px 0;
+}
+
+#sign-up-title-icon {
+    height: 100%;
+    margin: 0px 20px 0 0;
+    font-size: 2em;
+}
+
+#sign-up-title h1 {
+    margin: 0;
+    color: #a0ff27;
+    font-size: 2.8em;
+    font-weight: 800;
+}
+
+#sign-up-title path {
+    fill: #354998;
+}
+
+#sign-up-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#login-cta {
+    margin: 40px 0 0 0;
+    font-size: 1.2em;
+}
+
+#login-cta strong {
+    font-weight: 900;
+}
+
+#login-cta a {
+    margin: 40px 0 0 0;
+    font-weight: 900;
+    color: #a0ff27;
+}

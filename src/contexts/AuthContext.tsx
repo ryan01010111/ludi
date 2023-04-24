@@ -6,7 +6,16 @@ interface User {
   username: string;
 }
 
-type Login = (
+export type SignUpFunc = (
+  userData: {
+    emailAddress: string,
+    username: string,
+    password: string,
+    confirmPassword: string
+  }
+) => Promise<boolean>;
+
+export type LoginFunc = (
   userData: { emailAddress: string, password: string }
 ) => Promise<boolean>;
 
@@ -14,7 +23,8 @@ export interface AuthContext {
   isAuthenticated: boolean;
   user: User | null;
   authUser: () => Promise<void>;
-  login: Login;
+  signUp: SignUpFunc;
+  login: LoginFunc;
   logout: () => Promise<boolean>;
 }
 
@@ -38,19 +48,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
     const data = await res.json();
-    console.log('AUTH', data);
+    console.log('AUTH');
     setIsAuthenticated(true);
     setUser(data);
   }
 
-  const login: Login = async userData => {
-    console.log('userData', userData);
+  const signUp: SignUpFunc = async userData => {
     const res = await fetch('https://jsonplaceholder.typicode.com/users/1');
     if (res.status !== 200) {
       return false;
     }
     const data = await res.json();
-    console.log('LOGIN', data);
+    console.log('SIGN-UP', userData);
+    setUser(data);
+    setIsAuthenticated(true);
+    return true;
+  };
+
+  const login: LoginFunc = async userData => {
+    const res = await fetch('https://jsonplaceholder.typicode.com/users/1');
+    if (res.status !== 200) {
+      return false;
+    }
+    const data = await res.json();
+    console.log('LOGIN', userData);
     setUser(data);
     setIsAuthenticated(true);
     return true;
@@ -71,6 +92,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAuthenticated,
     user,
     authUser,
+    signUp,
     login,
     logout,
   }), [isAuthenticated, user]);

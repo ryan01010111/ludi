@@ -3,13 +3,15 @@ import { useEffect } from 'react';
 import Root from './routes/Root/Root';
 import ErrorPage from './components/ErrorPage';
 import Home from './routes/Home/Home';
-import SignUp from './routes/SignUp/SignUp';
+import SignUp, { action as signUpAction } from './routes/SignUp/SignUp';
 import Login, { action as loginAction } from './routes/Login/Login';
 import Search, { loader as searchLoader } from './routes/Search/Search';
 import { useAuth } from './contexts/AuthContext';
 
 export default function App() {
-  const { isAuthenticated, authUser, login } = useAuth();
+  const {
+    isAuthenticated, authUser, login, signUp,
+  } = useAuth();
 
   const router = createBrowserRouter([
     {
@@ -27,8 +29,9 @@ export default function App() {
           loader: searchLoader,
         },
         {
-          path: '/signup',
+          path: '/sign-up',
           element: <SignUp />,
+          action: signUpAction(signUp),
         },
         {
           path: '/login',
