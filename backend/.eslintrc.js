@@ -10,4 +10,8 @@ module.exports = {
   parserOptions: {
     project: ['./tsconfig.json', './tsconfig.eslint.json'],
   },
+  rules: {
+    'arrow-parens': 'off',
+    'max-len': ['error', { code: 100 }],
+  },
 };

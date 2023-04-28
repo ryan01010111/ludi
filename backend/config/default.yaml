@@ -1,0 +1,3 @@
+jwt:
+  secret: testsecretxyz123
+  ttl: 1 day
