@@ -3,17 +3,17 @@ import {
   ActionFunction, Form, Link, useActionData, useNavigate,
 } from 'react-router-dom';
 import { Icon } from '@iconify/react';
-import { SignUpFunc } from '../../contexts/AuthContext';
+import { AuthContext } from '../../contexts/AuthContext';
 import TextInput from '../../components/forms/TextInput';
 import Button from '../../components/Button';
 import { ActionData } from '../../types';
 import './SignUp.css';
 
 const inputParamsArr = [
-  { type: 'text', name: 'username', placeholder: 'Username' },
   { type: 'text', name: 'emailAddress', placeholder: 'Email' },
+  { type: 'text', name: 'username', placeholder: 'Username' },
   { type: 'password', name: 'password', placeholder: 'Password' },
-  { type: 'confirmPassword', name: 'confirmPassword', placeholder: 'Confirm Password' },
+  { type: 'password', name: 'confirmPassword', placeholder: 'Confirm Password' },
 ];
 
 export default function SignUp() {
@@ -60,7 +60,7 @@ export default function SignUp() {
 }
 
 export const action = (
-  signUp: SignUpFunc,
+  auth: AuthContext,
 ) => async ({ request }: Parameters<ActionFunction>[0]) => {
   const formData = await request.formData();
   const username = formData.get('username')?.toString();
@@ -71,11 +71,12 @@ export const action = (
     // TODO
     throw new Error('missing param(s)');
   }
-  await signUp({
+  if (password !== confirmPassword) throw new Error('passwords don\'t match');
+
+  await auth.signUp({
     username,
     emailAddress,
     password,
-    confirmPassword,
   });
 
   return { success: true };

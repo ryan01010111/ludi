@@ -3,13 +3,22 @@ import jwt from 'jsonwebtoken';
 import config from 'config';
 import { TokenUser } from './@types';
 
+const jwtConfig: Record<string, any> = config.get('jwt');
+const cookieMaxAge: number = config.get('cookieMaxAge');
+
 /* eslint-disable-next-line import/prefer-default-export */
 export function setTokenCookie(res: Response, user: TokenUser) {
   const token = jwt.sign(
     user,
-    config.get('jwt.secret'),
-    { expiresIn: config.get('jwt.ttl') },
+    jwtConfig.secret,
+    { expiresIn: jwtConfig.ttl },
   );
 
-  res.setHeader('Set-Cookie', `token=${token}; HttpOnly; SameSite=Strict; Secure; Path=/`);
+  res.cookie('token', token, {
+    maxAge: cookieMaxAge * 1000,
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: true,
+    path: '/',
+  });
 }

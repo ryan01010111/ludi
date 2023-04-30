@@ -6,25 +6,20 @@ interface User {
   username: string;
 }
 
-export type SignUpFunc = (
-  userData: {
-    emailAddress: string,
-    username: string,
-    password: string,
-    confirmPassword: string
-  }
-) => Promise<boolean>;
-
-export type LoginFunc = (
-  userData: { emailAddress: string, password: string }
-) => Promise<boolean>;
-
 export interface AuthContext {
   isAuthenticated: boolean;
   user: User | null;
   authUser: () => Promise<void>;
-  signUp: SignUpFunc;
-  login: LoginFunc;
+  signUp: (
+    userData: {
+      emailAddress: string;
+      username: string;
+      password: string;
+    }
+  ) => Promise<boolean>;
+  login: (
+    userData: { emailAddress: string, password: string }
+  ) => Promise<boolean>;
   logout: () => Promise<boolean>;
 }
 
@@ -38,51 +33,61 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+function genReqConfig(method: string, data: any) {
+  return {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  };
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
   async function authUser() {
-    const res = await fetch('https://jsonplaceholder.typicode.com/users/1');
+    console.log('AUTH');
+    const res = await fetch('/api/auth');
     if (res.status !== 200) {
       return;
     }
     const data = await res.json();
-    console.log('AUTH');
     setIsAuthenticated(true);
     setUser(data);
   }
 
-  const signUp: SignUpFunc = async userData => {
-    const res = await fetch('https://jsonplaceholder.typicode.com/users/1');
+  const signUp: AuthContext['signUp'] = async userData => {
+    const res = await fetch('/api/auth/register', genReqConfig('POST', userData));
     if (res.status !== 200) {
       return false;
     }
-    const data = await res.json();
-    console.log('SIGN-UP', userData);
-    setUser(data);
-    setIsAuthenticated(true);
+
     return true;
   };
 
-  const login: LoginFunc = async userData => {
-    const res = await fetch('https://jsonplaceholder.typicode.com/users/1');
+  const login: AuthContext['login'] = async userData => {
+    const config = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData),
+    };
+    const res = await fetch('/api/auth/login', config);
     if (res.status !== 200) {
       return false;
     }
+
     const data = await res.json();
-    console.log('LOGIN', userData);
     setUser(data);
     setIsAuthenticated(true);
     return true;
   };
 
   async function logout() {
-    const res = await fetch('https://jsonplaceholder.typicode.com/users/1');
+    const res = await fetch('/api/auth/logout');
     if (res.status !== 200) {
       return false;
     }
-    console.log('LOGOUT');
+
     setUser(null);
     setIsAuthenticated(false);
     return true;

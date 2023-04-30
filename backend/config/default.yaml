@@ -1,3 +1,5 @@
 jwt:
   secret: testsecretxyz123
-  ttl: 1 day
+  ttl: 86400
+
+cookieMaxAge: 86400

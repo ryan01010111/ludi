@@ -1,8 +1,17 @@
 import { Link, useLocation } from 'react-router-dom';
 import './Header.css';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Header() {
+  const auth = useAuth();
   const location = useLocation();
+
+  let loginLogoutNavItem: null | JSX.Element = null;
+  if (location.pathname !== '/login') {
+    loginLogoutNavItem = auth.isAuthenticated
+      ? <li><Link to="/logout">Log out</Link></li>
+      : <li><Link to="/login">Log in</Link></li>;
+  }
 
   return (
     <header
@@ -16,10 +25,10 @@ export default function Header() {
       <nav>
         <ul>
           <li><Link to="/login">About Us</Link></li>
-          <li><Link to="/login">Create an Event</Link></li>
+          <li><Link to="/create-event">Create an Event</Link></li>
           <li style={{ flex: 1 }} />
           <li><Link to="/login">Profile</Link></li>
-          <li><Link to="/login">Log in</Link></li>
+          {loginLogoutNavItem}
         </ul>
       </nav>
     </header>

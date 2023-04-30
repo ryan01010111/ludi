@@ -1,16 +1,24 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import { runMigration } from './db';
 
 // routes
-import authRouter from './routes/api/auth';
+import authRouter from './routes/auth';
 
-const app = express();
+async function init() {
+  await runMigration();
 
-// middleware
-app.use(express.json());
-app.use(cookieParser());
+  const app = express();
 
-// routes
-app.use('/api/auth', authRouter);
+  // middleware
+  app.use(express.json());
+  app.use(cookieParser());
 
-app.listen(3000, () => console.log('Server up...'));
+  // routes
+  app.use('/auth', authRouter);
+
+  app.listen(3000, () => console.log('Server up...'));
+}
+
+init()
+  .catch(err => console.error('Error starting server:', err));
