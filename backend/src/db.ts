@@ -23,12 +23,17 @@ export default {
     }, 5000);
 
     client.query('BEGIN;');
-    const result = await cb(client);
-    client.query('COMMIT;');
-
-    client.release();
-    clearTimeout(timeout);
-    return result;
+    try {
+      const result = await cb(client);
+      client.query('COMMIT;');
+      return result;
+    } catch (e) {
+      client.query('ROLLBACK;');
+      throw e;
+    } finally {
+      client.release();
+      clearTimeout(timeout);
+    }
   },
 };
 
