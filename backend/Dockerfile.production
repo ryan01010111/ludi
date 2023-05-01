@@ -1,0 +1,24 @@
+FROM node:18 as build
+WORKDIR /app
+ENV NODE_ENV production
+
+COPY package*.json ./
+RUN npm i
+
+COPY tsconfig.json .
+COPY src/ src/
+RUN npm run build
+
+FROM node:18
+WORKDIR /usr/src/app
+ENV NODE_ENV=production
+
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY --from=build /app/dist/ .
+COPY config/ config/
+COPY db_migrations/ db_migrations/
+
+EXPOSE 3000
+CMD ["npm", "start"]

@@ -1,0 +1,1 @@
+This is a playground project, where I experiment with tech and architectural/infra strategies, patterns, etc. Superfluous components, unusual combinations, and TODOs abound.

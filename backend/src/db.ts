@@ -2,10 +2,10 @@ import { Pool, PoolClient } from 'pg';
 import fs from 'fs';
 import path from 'path';
 
+const pool = new Pool();
+
 // TODO
 type GetClientCallback = (con: PoolClient) => Promise<any>;
-
-const pool = new Pool();
 
 export default {
   async query(text: string, params: any[]) {
