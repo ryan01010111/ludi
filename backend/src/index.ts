@@ -20,5 +20,4 @@ async function init() {
   app.listen(3000, () => console.log('Server up...'));
 }
 
-init()
-  .catch(err => console.error('Error starting server:', err));
+init();

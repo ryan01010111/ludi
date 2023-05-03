@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import auth from '../middleware/auth';
 import adapter from './authAdapter';
+import validator from '../validator';
 import { setTokenCookie } from '../utils';
 
 const router = Router();
@@ -23,8 +24,12 @@ router.get('/', auth, (req, res) => {
 // @desc    register user
 // @access  Public
 router.post('/register', async (req, res, next) => {
-  // TODO: validation
-  const { emailAddress, username, password } = req.body;
+  const validationResult = validator.register.safeParse(req.body);
+  if (!validationResult.success) {
+    res.status(400).json({ validationError: validationResult.error.issues });
+    return;
+  }
+  const { emailAddress, username, password } = validationResult.data;
 
   try {
     // TODO: check username exists
@@ -56,7 +61,6 @@ router.post('/register', async (req, res, next) => {
 // @access  Public
 router.post('/confirm-registration', async (req, res, next) => {
   const { token } = req.body;
-
   if (!token) {
     res.status(401).json({ error: 'Missing token' });
     return;
@@ -83,8 +87,12 @@ router.post('/confirm-registration', async (req, res, next) => {
 // @desc    issue access token
 // @access  Public
 router.post('/login', async (req, res, next) => {
-  // TODO: validation
-  const { emailAddress, password } = req.body;
+  const validationResult = validator.login.safeParse(req.body);
+  if (!validationResult.success) {
+    res.status(400).json({ validationError: validationResult.error.issues });
+    return;
+  }
+  const { emailAddress, password } = validationResult.data;
 
   try {
     const userWithPassword = await adapter.getUser(emailAddress, true);

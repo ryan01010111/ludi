@@ -21,7 +21,8 @@ async function getUser(emailAddress: string, withPassword?: false) : Promise<Use
 async function getUser(emailAddress: string, withPassword?: boolean) : Promise<User> {
   const sql = `
     SELECT ${defaultUserFields} ${withPassword ? ', password' : ''}
-    FROM platform_users WHERE email_address = $1 AND status != 'deleted';
+    FROM platform_users
+    WHERE LOWER(email_address) = LOWER($1) AND status != 'deleted';
   `;
   const res = await db.query(sql, [emailAddress]);
   return res.rows[0];
