@@ -2,6 +2,8 @@ version: "3.9"
 services:
   server:
     volumes:
+      - ./package.json:/usr/src/app/package.json
       - ./src:/usr/src/app/src
       - ./config:/usr/src/app/config
       - ./db_migrations:/usr/src/app/db_migrations
+      - ./test:/usr/src/app/test

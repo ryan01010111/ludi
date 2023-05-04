@@ -14,6 +14,9 @@ module.exports = {
     'arrow-parens': 'off',
     'max-len': ['error', { code: 100 }],
     'no-continue': 'off',
+    'import/no-extraneous-dependencies': [
+      'error', { devDependencies: ['**/*.test.ts', '**/*.spec.ts'] },
+    ],
     'no-restricted-syntax': [
       'error',
       {
@@ -33,6 +36,5 @@ module.exports = {
           + 'and optimize.',
       },
     ],
-
   },
 };
