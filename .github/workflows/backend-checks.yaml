@@ -21,3 +21,10 @@ jobs:
           node-version: '18.x'
       - run: npm i
       - run: npm run lint
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: ./compose_services.sh
+      - run: npm run test
+
