@@ -7,3 +7,4 @@ services:
       - ./config:/usr/src/app/config
       - ./db_migrations:/usr/src/app/db_migrations
       - ./test:/usr/src/app/test
+      - ./jest.config.js:/usr/src/app/jest.config.js

@@ -1,6 +1,9 @@
 #! /usr/bin/env bash
 
-docker_compose_files_args='-f docker-compose.yaml -f docker-compose.development.yaml'
+docker_compose_files_args='-f docker-compose.yaml'
+if [[ ! -z $CI ]]; then
+    docker_compose_files_args+=" -f docker-compose.development.yaml"
+fi
 
 await_postgres() {
     set +e
