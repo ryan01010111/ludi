@@ -1,5 +1,12 @@
+platformURL: 'http://localhost:5173'
+
 jwt:
   secret: testsecretxyz123
   ttl: 86400
 
 cookieMaxAge: 86400
+
+ses:
+  endpoint: 'http://mockserver'
+
+notificationsEmailAddress: notifications@ludi.com

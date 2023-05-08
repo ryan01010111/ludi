@@ -15,8 +15,10 @@ module.exports = {
     'max-len': ['error', { code: 100 }],
     'no-continue': 'off',
     'import/no-extraneous-dependencies': [
-      'error', { devDependencies: ['**/*.test.ts', '**/*.spec.ts'] },
+      'error', { devDependencies: ['**/*.test.ts', '**/*.spec.ts', 'test/**'] },
     ],
+    '@typescript-eslint/no-shadow': 'off',
+    'no-plusplus': 'off',
     'no-restricted-syntax': [
       'error',
       {

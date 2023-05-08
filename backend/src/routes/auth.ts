@@ -6,6 +6,7 @@ import auth from '../middleware/auth';
 import adapter from './authAdapter';
 import validator from '../validator';
 import { setTokenCookie } from '../utils';
+import sendMail from '../mailer';
 
 const router = Router();
 
@@ -42,13 +43,12 @@ router.post('/register', async (req, res, next) => {
     const hash = await bcrypt.hash(password, 12);
     const user = await adapter.createUser({ emailAddress, username, password: hash });
 
-    // TODO: conf. email
     const token = jwt.sign(
       { id: user.id },
       jwtConfig.secret,
       { expiresIn: '1 hour' },
     );
-    console.log(token);
+    await sendMail(user.emailAddress, 'registrationConfirmation', token);
 
     res.end();
   } catch (e) {

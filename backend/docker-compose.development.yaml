@@ -8,3 +8,6 @@ services:
       - ./db_migrations:/usr/src/app/db_migrations
       - ./test:/usr/src/app/test
       - ./jest.config.js:/usr/src/app/jest.config.js
+  mockserver:
+    volumes:
+      - ./test/integration/mock/index.js:/usr/src/app/index.js

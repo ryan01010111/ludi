@@ -1,7 +1,7 @@
 #! /usr/bin/env bash
 
 docker_compose_files_args='-f docker-compose.yaml'
-if [[ ! -z $CI ]]; then
+if [[ -z $CI ]]; then
     docker_compose_files_args+=" -f docker-compose.development.yaml"
 fi
 
@@ -27,6 +27,8 @@ docker compose $docker_compose_files_args up -d postgres
 await_postgres
 docker compose exec -T postgres psql -U postgres -c 'CREATE DATABASE ludi;'
 
+# TODO: status check
+docker compose $docker_compose_files_args up -d mockserver 
 docker compose $docker_compose_files_args up -d server 
 
 exit $?

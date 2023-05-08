@@ -1,3 +1,5 @@
+platformURL: PLATFORM_URL
+
 jwt:
   secret: JWT_SECRET
   ttl: JWT_TTL
