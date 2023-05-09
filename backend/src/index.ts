@@ -17,7 +17,7 @@ async function init() {
   // routes
   app.use('/auth', authRouter);
 
-  app.listen(3000, () => console.log('Server up...'));
+  app.listen(80, () => console.log('Server up...'));
 }
 
 init();

@@ -13,5 +13,5 @@ COPY db_migrations/ db_migrations/
 COPY test/ test/
 COPY jest.config.js .
 
-EXPOSE 3000
+EXPOSE 80
 CMD ["npm", "run", "dev"]

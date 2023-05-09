@@ -15,10 +15,22 @@ const jwtConfig: Record<string, any> = config.get('jwt');
 // @route   GET /auth
 // @desc    auth user
 // @access  Private
-router.get('/', auth, (req, res) => {
-  const { user } = req;
-  setTokenCookie(res, req.user);
-  res.json({ user });
+router.get('/', auth, async (req, res, next) => {
+  try {
+    const user = await adapter.getUserById(req.user.id);
+    if (!user) {
+      res.status(401).json({ error: 'Invalid credentials' });
+      return;
+    }
+
+    setTokenCookie(res, user);
+    res.json({
+      emailAddress: user.emailAddress,
+      username: user.username,
+    });
+  } catch (e) {
+    next(e);
+  }
 });
 
 // @route   POST /auth/register
@@ -77,8 +89,12 @@ router.post('/confirm-registration', async (req, res, next) => {
 
   // TODO: check if already activated
 
-  await adapter.activateUser(userID)
-    .catch(next);
+  try {
+    await adapter.activateUser(userID);
+  } catch (e) {
+    next(e);
+    return;
+  }
 
   res.end();
 });
@@ -113,17 +129,21 @@ router.post('/login', async (req, res, next) => {
       return;
     }
 
-    setTokenCookie(res, user);
-    res.json({ user });
+    const tokenUser = { id: user.id, emailAddress: user.emailAddress };
+    setTokenCookie(res, tokenUser);
+    res.json({
+      emailAddress: user.emailAddress,
+      username: user.username,
+    });
   } catch (e) {
     next(e);
   }
 });
 
-// @route   GET /auth/logout
+// @route   POST /auth/logout
 // @desc    revoke access token
 // @access  Private
-router.get('/logout', auth, async (_req, res) => {
+router.post('/logout', auth, async (_req, res) => {
   res.clearCookie('token');
   res.end();
 });

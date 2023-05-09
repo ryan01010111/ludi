@@ -50,10 +50,11 @@ async function handleSend(toAddress: string, subject: string, html: string) {
   const command = new SendEmailCommand(params);
 
   try {
-    const data = await client.send(command);
-    console.log('data:::', data);
+    await client.send(command);
   } catch (e) {
+    // TODO
     console.error(e);
+    throw e;
   }
 }
 

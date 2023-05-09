@@ -28,6 +28,16 @@ async function getUser(emailAddress: string, withPassword?: boolean) : Promise<U
   return res.rows[0];
 }
 
+async function getUserById(id: number) : Promise<User> {
+  const sql = `
+    SELECT ${defaultUserFields}
+    FROM platform_users
+    WHERE id = $1 AND status != 'deleted';
+  `;
+  const res = await db.query(sql, [id]);
+  return res.rows[0];
+}
+
 interface CreateUserData {
   emailAddress: string;
   username: string;
@@ -49,6 +59,7 @@ async function activateUser(userID: number) {
 
 export default {
   getUser,
+  getUserById,
   createUser,
   activateUser,
 };

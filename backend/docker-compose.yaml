@@ -17,6 +17,6 @@ services:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
     ports:
-      - 3000:3000
+      - 3000:80
   mockserver:
     build: test/integration/mock

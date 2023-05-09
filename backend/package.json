@@ -8,7 +8,7 @@
     "build": "tsc -p .",
     "start": "nodemon ./index.js",
     "lint": "eslint .",
-    "test:integration": "jest",
+    "test:integration": "jest --setupFilesAfterEnv ./test/integration/setup.ts",
     "test": "docker compose exec server npm run test:integration"
   },
   "keywords": [],

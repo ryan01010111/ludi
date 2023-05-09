@@ -19,5 +19,4 @@ COPY --from=build /app/dist/ .
 COPY config/ config/
 COPY db_migrations/ db_migrations/
 
-EXPOSE 3000
 CMD ["npm", "start"]

@@ -5,6 +5,7 @@ import ErrorPage from './components/ErrorPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './routes/Home/Home';
 import SignUp, { action as signUpAction } from './routes/SignUp/SignUp';
+import ConfirmSignUp, { loader as confirmSignUpLoader } from './routes/ConfirmSignUp/ConfirmSignUp';
 import Login, { action as loginAction } from './routes/Login/Login';
 import Logout, { loader as logoutLoader } from './routes/Logout/Logout';
 import LogoutSuccess from './routes/LogoutSuccess/LogoutSuccess';
@@ -33,6 +34,11 @@ export default function App() {
           path: '/sign-up',
           element: <SignUp />,
           action: signUpAction(auth),
+        },
+        {
+          path: '/confirm-sign-up',
+          element: <ConfirmSignUp />,
+          loader: confirmSignUpLoader(auth),
         },
         {
           path: '/login',

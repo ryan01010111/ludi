@@ -17,6 +17,7 @@ export interface AuthContext {
       password: string;
     }
   ) => Promise<boolean>;
+  confirmSignUp: (token: string) => Promise<boolean>;
   login: (
     userData: { emailAddress: string, password: string }
   ) => Promise<boolean>;
@@ -46,7 +47,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
 
   async function authUser() {
-    console.log('AUTH');
     const res = await fetch('/api/auth');
     if (res.status !== 200) {
       return;
@@ -58,6 +58,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const signUp: AuthContext['signUp'] = async userData => {
     const res = await fetch('/api/auth/register', genReqConfig('POST', userData));
+    if (res.status !== 200) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const confirmSignUp: AuthContext['confirmSignUp'] = async token => {
+    const res = await fetch('/api/auth/confirm-registration', genReqConfig('POST', { token }));
     if (res.status !== 200) {
       return false;
     }
@@ -83,7 +92,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   async function logout() {
-    const res = await fetch('/api/auth/logout');
+    const res = await fetch('/api/auth/logout', { method: 'POST' });
     if (res.status !== 200) {
       return false;
     }
@@ -98,6 +107,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user,
     authUser,
     signUp,
+    confirmSignUp,
     login,
     logout,
   }), [isAuthenticated, user]);

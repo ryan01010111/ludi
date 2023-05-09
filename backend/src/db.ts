@@ -9,10 +9,10 @@ type GetClientCallback = (con: PoolClient) => Promise<any>;
 
 export default {
   async query(text: string, params: any[]) {
-    const start = Date.now();
+    // const start = Date.now();
     const res = await pool.query(text, params);
-    const duration = Date.now() - start;
-    console.log('executed query', { text, duration, rows: res.rowCount });
+    // const duration = Date.now() - start;
+    // console.log('executed query', { text, duration, rows: res.rowCount });
     return res;
   },
 
@@ -34,6 +34,10 @@ export default {
       client.release();
       clearTimeout(timeout);
     }
+  },
+
+  disconnect() {
+    return pool.end();
   },
 };
 
