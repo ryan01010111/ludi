@@ -1,5 +1,5 @@
 import {
-  ReactNode, createContext, useContext, useMemo, useState,
+  ReactNode, createContext, useContext, useMemo, useRef, useState,
 } from 'react';
 
 interface User {
@@ -9,6 +9,7 @@ interface User {
 export interface AuthContext {
   isAuthenticated: boolean;
   user: User | null;
+  accessToken: string | null;
   authUser: () => Promise<void>;
   signUp: (
     userData: {
@@ -43,17 +44,25 @@ function genReqConfig(method: string, data: any) {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  const authLoading = useRef(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   async function authUser() {
-    const res = await fetch('/api/auth');
+    if (authLoading.current) return;
+    authLoading.current = true;
+
+    const res = await fetch('/api/auth/refresh');
     if (res.status !== 200) {
       return;
     }
+
     const data = await res.json();
     setIsAuthenticated(true);
-    setUser(data);
+    setUser(data.user);
+    setAccessToken(data.accessToken);
+    authLoading.current = false;
   }
 
   const signUp: AuthContext['signUp'] = async userData => {
@@ -75,19 +84,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const login: AuthContext['login'] = async userData => {
-    const config = {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData),
-    };
-    const res = await fetch('/api/auth/login', config);
+    const res = await fetch('/api/auth/login', genReqConfig('POST', userData));
     if (res.status !== 200) {
       return false;
     }
 
     const data = await res.json();
-    setUser(data);
     setIsAuthenticated(true);
+    setUser(data.user);
+    setAccessToken(data.accessToken);
     return true;
   };
 
@@ -99,18 +104,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     setUser(null);
     setIsAuthenticated(false);
+    setAccessToken(null);
     return true;
   }
 
   const context = useMemo(() => ({
     isAuthenticated,
     user,
+    accessToken,
     authUser,
     signUp,
     confirmSignUp,
     login,
     logout,
-  }), [isAuthenticated, user]);
+  }), [isAuthenticated, user, accessToken]);
 
   return (
     <Context.Provider value={context}>

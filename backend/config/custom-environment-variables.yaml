@@ -1,5 +1,9 @@
 platformURL: PLATFORM_URL
 
-jwt:
-  secret: JWT_SECRET
-  ttl: JWT_TTL
+accessToken:
+  secret: ACCESS_TOKEN_SECRET
+  ttl: ACCESS_TOKEN_TTL
+
+refreshToken:
+  secret: REFRESH_TOKEN_SECRET
+  ttl: REFRESH_TOKEN_TTL

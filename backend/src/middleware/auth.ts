@@ -1,18 +1,24 @@
 import { RequestHandler } from 'express';
 import jwt from 'jsonwebtoken';
 import config from 'config';
+import { TokenUser } from '../@types';
 
 const auth: RequestHandler = (req, res, next) => {
-  if (!req.cookies.token) {
+  const authHeader = req.headers.Authorization || req.headers.authorization;
+  const accessToken = typeof authHeader === 'string'
+    ? authHeader.match(/^Bearer (.+)/)?.[1]
+    : null;
+
+  if (!accessToken) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
 
   try {
     const { id, emailAddress } = jwt.verify(
-      req.cookies.token,
-      config.get('jwt.secret'),
-    ) as jwt.JwtPayload;
+      accessToken,
+      config.get('accessToken.secret'),
+    ) as jwt.JwtPayload & TokenUser;
     req.user = { id, emailAddress };
     next();
   } catch (e: any) {

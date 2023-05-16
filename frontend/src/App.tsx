@@ -10,6 +10,7 @@ import Login, { action as loginAction } from './routes/Login/Login';
 import Logout, { loader as logoutLoader } from './routes/Logout/Logout';
 import LogoutSuccess from './routes/LogoutSuccess/LogoutSuccess';
 import Search, { loader as searchLoader } from './routes/Search/Search';
+import CreateEvent, { loader as createEventLoader } from './routes/CreateEvent/CreateEvent';
 import { useAuth } from './contexts/AuthContext';
 
 export default function App() {
@@ -24,11 +25,6 @@ export default function App() {
         {
           index: true,
           element: <Home />,
-        },
-        {
-          path: '/search',
-          element: <Search />,
-          loader: searchLoader,
         },
         {
           path: '/sign-up',
@@ -55,11 +51,17 @@ export default function App() {
           element: <LogoutSuccess />,
         },
         {
+          path: '/search',
+          element: <Search />,
+          loader: searchLoader,
+        },
+        {
           element: <ProtectedRoute auth={auth} />,
           children: [
             {
               path: '/create-event',
-              element: <h1>Create Event Page</h1>,
+              element: <CreateEvent />,
+              loader: createEventLoader(auth),
             },
           ],
         },

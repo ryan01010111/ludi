@@ -3,22 +3,37 @@ import jwt from 'jsonwebtoken';
 import config from 'config';
 import { TokenUser } from './@types';
 
-const jwtConfig: Record<string, any> = config.get('jwt');
-const cookieMaxAge: number = config.get('cookieMaxAge');
+const refreshTokenConfig: Record<string, any> = config.get('refreshToken');
 
-/* eslint-disable-next-line import/prefer-default-export */
-export function setTokenCookie(res: Response, user: TokenUser) {
+export function camelCaseToSnakeCase(input: string) {
+  return input
+    .replace(/[A-Z]+$/, s => `_${s.toLowerCase()}`)
+    .replace(/([A-Z])/g, char => `_${char.toLowerCase()}`);
+}
+
+export function setRefreshTokenCookie(res: Response, user: TokenUser): string {
   const token = jwt.sign(
     user,
-    jwtConfig.secret,
-    { expiresIn: jwtConfig.ttl },
+    refreshTokenConfig.secret,
+    { expiresIn: refreshTokenConfig.ttl },
   );
 
-  res.cookie('token', token, {
-    maxAge: cookieMaxAge * 1000,
+  res.cookie('refreshToken', token, {
+    maxAge: refreshTokenConfig.ttl * 1000,
     httpOnly: true,
     sameSite: 'strict',
     secure: true,
-    path: '/',
+    path: '/api/auth',
+  });
+
+  return token;
+}
+
+export function clearRefreshTokenCookie(res: Response) {
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: true,
+    path: '/api/auth',
   });
 }

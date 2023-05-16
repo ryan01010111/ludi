@@ -1,10 +1,12 @@
 platformURL: 'http://localhost:5173'
 
-jwt:
-  secret: testsecretxyz123
-  ttl: 86400
+accessToken:
+  secret: accessTokenSECRET123
+  ttl: 600
 
-cookieMaxAge: 86400
+refreshToken:
+  secret: refreshTokenSECRET123
+  ttl: 172800
 
 ses:
   endpoint: 'http://mockserver'

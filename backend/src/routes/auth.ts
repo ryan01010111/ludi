@@ -5,28 +5,91 @@ import jwt from 'jsonwebtoken';
 import auth from '../middleware/auth';
 import adapter from './authAdapter';
 import validator from '../validator';
-import { setTokenCookie } from '../utils';
+import { clearRefreshTokenCookie, setRefreshTokenCookie } from '../utils';
 import sendMail from '../mailer';
+import { TokenUser } from '../@types';
 
 const router = Router();
 
-const jwtConfig: Record<string, any> = config.get('jwt');
+const refreshTokenConfig: Record<string, any> = config.get('refreshToken');
+const accessTokenConfig: Record<string, any> = config.get('accessToken');
 
-// @route   GET /auth
-// @desc    auth user
-// @access  Private
-router.get('/', auth, async (req, res, next) => {
+// @route   GET /auth/refresh
+// @desc    issue new access and refresh tokens
+// @access  Public
+router.get('/refresh', async (req, res, next) => {
+  const { refreshToken } = req.cookies;
+  if (!refreshToken) {
+    res.status(401).json({ error: 'Invalid or missing token' });
+    return;
+  }
+  clearRefreshTokenCookie(res);
+
+  let user;
   try {
-    const user = await adapter.getUserById(req.user.id);
-    if (!user) {
-      res.status(401).json({ error: 'Invalid credentials' });
-      return;
-    }
+    user = await adapter.getUserByRefreshToken(refreshToken);
+  } catch (e) {
+    next(e);
+    return;
+  }
 
-    setTokenCookie(res, user);
+  if (!user) {
+    // token invalid, or expired and/or already used
+    try {
+      const userData = jwt.verify(
+        refreshToken,
+        refreshTokenConfig.secret,
+        { ignoreExpiration: true },
+      ) as jwt.JwtPayload & TokenUser;
+      // token expired and/or already used - revoke all refresh tokens for user
+      try {
+        await adapter.deleteAllRefreshTokensForUser(userData.id);
+      } catch (e) {
+        next(e);
+        return;
+      }
+    } catch (e) {
+      // token invalid
+    }
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  /* token lookup successful */
+
+  try {
+    jwt.verify(
+      refreshToken,
+      refreshTokenConfig.secret,
+    ) as jwt.JwtPayload & TokenUser;
+  } catch (e) {
+    // token expired
+    await adapter.deleteUserRefreshToken(refreshToken)
+      .then(() => res.status(401).json({ error: 'Unauthorized' }))
+      .catch(next);
+    return;
+  }
+
+  const tokenUserData = { id: user.id, emailAddress: user.emailAddress };
+  const accessToken = jwt.sign(
+    tokenUserData,
+    accessTokenConfig.secret,
+    { expiresIn: accessTokenConfig.ttl },
+  );
+  const newRefreshToken = setRefreshTokenCookie(res, tokenUserData);
+
+  try {
+    await Promise.all([
+      adapter.deleteUserRefreshToken(refreshToken),
+      adapter.addUserRefreshToken(user.id, newRefreshToken),
+    ]);
+
     res.json({
-      emailAddress: user.emailAddress,
-      username: user.username,
+      user: {
+        emailAddress: user.emailAddress,
+        username: user.username,
+      },
+      accessToken,
     });
   } catch (e) {
     next(e);
@@ -57,7 +120,7 @@ router.post('/register', async (req, res, next) => {
 
     const token = jwt.sign(
       { id: user.id },
-      jwtConfig.secret,
+      refreshTokenConfig.secret,
       { expiresIn: '1 hour' },
     );
     await sendMail(user.emailAddress, 'registrationConfirmation', token);
@@ -80,8 +143,8 @@ router.post('/confirm-registration', async (req, res, next) => {
 
   let userID: number;
   try {
-    const data = jwt.verify(token, jwtConfig.secret);
-    userID = (data as jwt.JwtPayload).id;
+    const data = jwt.verify(token, refreshTokenConfig.secret) as jwt.JwtPayload;
+    userID = data.id;
   } catch (e) {
     res.status(401).json({ error: 'Invalid token' });
     return;
@@ -129,11 +192,25 @@ router.post('/login', async (req, res, next) => {
       return;
     }
 
-    const tokenUser = { id: user.id, emailAddress: user.emailAddress };
-    setTokenCookie(res, tokenUser);
+    const reqRefreshToken: string | undefined = req.cookies.refreshToken;
+    if (reqRefreshToken) await adapter.deleteUserRefreshToken(reqRefreshToken);
+    clearRefreshTokenCookie(res);
+
+    const tokenUserData = { id: user.id, emailAddress: user.emailAddress };
+    const accessToken = jwt.sign(
+      tokenUserData,
+      accessTokenConfig.secret,
+      { expiresIn: accessTokenConfig.ttl },
+    );
+    const refreshToken = setRefreshTokenCookie(res, tokenUserData);
+    await adapter.addUserRefreshToken(user.id, refreshToken);
+
     res.json({
-      emailAddress: user.emailAddress,
-      username: user.username,
+      user: {
+        emailAddress: user.emailAddress,
+        username: user.username,
+      },
+      accessToken,
     });
   } catch (e) {
     next(e);
@@ -141,11 +218,30 @@ router.post('/login', async (req, res, next) => {
 });
 
 // @route   POST /auth/logout
-// @desc    revoke access token
+// @desc    revoke refresh token
+// @access  Public
+router.post('/logout', async (req, res, next) => {
+  const { refreshToken } = req.cookies;
+  if (!refreshToken) {
+    res.status(401).json({ error: 'Invalid or missing token' });
+    return;
+  }
+  clearRefreshTokenCookie(res);
+
+  try {
+    await adapter.deleteUserRefreshToken(refreshToken);
+    res.end();
+  } catch (e) {
+    next(e);
+  }
+});
+
+// TODO: remove
+// @route   GET /auth/test
+// @desc    test auth
 // @access  Private
-router.post('/logout', auth, async (_req, res) => {
-  res.clearCookie('token');
-  res.end();
+router.get('/test', auth, async (_req, res) => {
+  res.json({ success: true });
 });
 
 export default router;

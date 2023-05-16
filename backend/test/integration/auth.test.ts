@@ -1,6 +1,7 @@
 import assert from 'assert';
 import { v4 as uuid } from 'uuid';
 import axios from 'axios';
+import jwt from 'jsonwebtoken';
 import * as helper from './helper';
 import * as adapter from './adapter';
 
@@ -52,7 +53,7 @@ describe('/auth', () => {
   });
 
   describe('/login', () => {
-    test('should log a user in', async () => {
+    test('should log a user in, returning user data and access token', async () => {
       const userParams = {
         emailAddress: `d.mendeleev-${uuid()}@spbu.ru`,
         username: `chemboi-${uuid()}`,
@@ -67,9 +68,22 @@ describe('/auth', () => {
         password: userParams.password,
       };
       const res = await axios.post('http://localhost/auth/login', reqParams);
+
+      const tokenData = jwt.decode(res.data.accessToken);
+      assert.ok(tokenData && typeof tokenData === 'object');
+      const {
+        iat, exp, id, ...userData
+      } = tokenData;
+      assert.ok(id);
+      assert.deepStrictEqual(userData, { emailAddress: userParams.emailAddress });
+      assert.ok(jwt.decode(res.data.accessToken));
+      delete res.data.accessToken;
+
       assert.deepStrictEqual(res.data, {
-        emailAddress: userParams.emailAddress,
-        username: userParams.username,
+        user: {
+          emailAddress: userParams.emailAddress,
+          username: userParams.username,
+        },
       });
     });
   });
