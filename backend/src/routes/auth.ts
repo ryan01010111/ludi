@@ -3,7 +3,7 @@ import config from 'config';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import auth from '../middleware/auth';
-import adapter from './authAdapter';
+import * as adapter from './authAdapter';
 import validator from '../validator';
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from '../utils';
 import sendMail from '../mailer';
@@ -143,17 +143,26 @@ router.post('/confirm-registration', async (req, res, next) => {
 
   let userID: number;
   try {
-    const data = jwt.verify(token, refreshTokenConfig.secret) as jwt.JwtPayload;
+    const data = jwt.verify(token, refreshTokenConfig.secret) as jwt.JwtPayload & TokenUser;
     userID = data.id;
   } catch (e) {
     res.status(401).json({ error: 'Invalid token' });
     return;
   }
 
-  // TODO: check if already activated
+  const user = await adapter.getUserById(userID);
+  if (!user) {
+    res.status(404).json({ error: 'User not found' });
+    return;
+  }
+
+  if (user.status === 'active') {
+    res.status(409).json({ error: 'ACCOUNT_ALREADY_ACTIVATED' });
+    return;
+  }
 
   try {
-    await adapter.activateUser(userID);
+    await adapter.updateUser(user.id, { status: 'active', updatedBy: 'system' });
   } catch (e) {
     next(e);
     return;

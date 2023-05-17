@@ -14,12 +14,12 @@ interface User {
   status: string;
 }
 
-async function getUser(
+export async function getUser(
   emailAddress: string,
   withPassword: true
 ): Promise<User & { password: string } | null>;
-async function getUser(emailAddress: string, withPassword?: false) : Promise<User | null>;
-async function getUser(emailAddress: string, withPassword?: boolean) : Promise<User | null> {
+export async function getUser(emailAddress: string, withPassword?: false) : Promise<User | null>;
+export async function getUser(emailAddress: string, withPassword?: boolean) : Promise<User | null> {
   const sql = `
     SELECT ${defaultUserColumns} ${withPassword ? ', password' : ''}
     FROM platform_users
@@ -32,7 +32,7 @@ async function getUser(emailAddress: string, withPassword?: boolean) : Promise<U
   return result;
 }
 
-async function getUserById(id: number): Promise<User | null> {
+export async function getUserById(id: number): Promise<User | null> {
   const sql = `
     SELECT ${defaultUserColumns}
     FROM platform_users
@@ -45,7 +45,7 @@ async function getUserById(id: number): Promise<User | null> {
   return result;
 }
 
-async function getUserByRefreshToken(refreshToken: string): Promise<User | null> {
+export async function getUserByRefreshToken(refreshToken: string): Promise<User | null> {
   const sql = `
     SELECT ${defaultUserColumns}
     FROM platform_user_refresh_tokens purt
@@ -64,7 +64,7 @@ interface CreateUserData {
   username: string;
   password: string;
 }
-async function createUser(userData: CreateUserData): Promise<User> {
+export async function createUser(userData: CreateUserData): Promise<User> {
   const sql = `
     INSERT INTO platform_users (email_address, username, password)
     VALUES ($1, $2, $3) RETURNING ${defaultUserColumns};
@@ -75,19 +75,16 @@ async function createUser(userData: CreateUserData): Promise<User> {
   return result;
 }
 
-// TODO: replace with updateUser
-async function activateUser(userID: number) {
-  const sql = 'UPDATE platform_users SET status = \'active\' WHERE id = $1;';
-  await db.query(sql, [userID]);
-}
-
 interface UpdateUserData {
   emailAddress?: string;
   username?: string;
   status?: string;
   updatedBy: number | string;
 }
-async function updateUser(userID: number, userData: UpdateUserData): Promise<User | undefined> {
+export async function updateUser(
+  userID: number,
+  userData: UpdateUserData,
+): Promise<User | undefined> {
   // TODO: move to DB module
   const columnsSQL = [];
   const values = [];
@@ -109,7 +106,7 @@ async function updateUser(userID: number, userData: UpdateUserData): Promise<Use
   return result;
 }
 
-async function getUserRefreshTokens(userID: number): Promise<string[]> {
+export async function getUserRefreshTokens(userID: number): Promise<string[]> {
   const sql = `
     SELECT refresh_token AS "refreshToken"
     FROM platform_user_refresh_tokens
@@ -119,36 +116,23 @@ async function getUserRefreshTokens(userID: number): Promise<string[]> {
   return res.rows.map(row => row.refreshToken);
 }
 
-async function addUserRefreshToken(userID: number, refreshToken: string) {
+export async function addUserRefreshToken(userID: number, refreshToken: string) {
   await db.query(
     'INSERT INTO platform_user_refresh_tokens (platform_user_id, refresh_token) VALUES ($1, $2);',
     [userID, refreshToken],
   );
 }
 
-async function deleteUserRefreshToken(refreshToken: string) {
+export async function deleteUserRefreshToken(refreshToken: string) {
   await db.query(
     'DELETE FROM platform_user_refresh_tokens WHERE refresh_token = $1;',
     [refreshToken],
   );
 }
 
-async function deleteAllRefreshTokensForUser(userID: number) {
+export async function deleteAllRefreshTokensForUser(userID: number) {
   await db.query(
     'DELETE FROM platform_user_refresh_tokens WHERE platform_user_id = $1;',
     [userID],
   );
 }
-
-export default {
-  getUser,
-  getUserById,
-  getUserByRefreshToken,
-  createUser,
-  activateUser,
-  updateUser,
-  getUserRefreshTokens,
-  addUserRefreshToken,
-  deleteUserRefreshToken,
-  deleteAllRefreshTokensForUser,
-};
