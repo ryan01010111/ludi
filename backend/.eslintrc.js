@@ -19,6 +19,7 @@ module.exports = {
     ],
     '@typescript-eslint/no-shadow': 'off',
     'no-plusplus': 'off',
+    'no-param-reassign': 'off',
     'no-restricted-syntax': [
       'error',
       {

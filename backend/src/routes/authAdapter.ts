@@ -1,5 +1,4 @@
 import db from '../db';
-import { camelCaseToSnakeCase } from '../utils';
 
 const defaultUserColumns = [
   'id',
@@ -85,15 +84,7 @@ export async function updateUser(
   userID: number,
   userData: UpdateUserData,
 ): Promise<User | undefined> {
-  // TODO: move to DB module
-  const columnsSQL = [];
-  const values = [];
-  let valueIndex = 2;
-  for (const [field, val] of Object.entries(userData)) {
-    if (field === undefined) continue;
-    columnsSQL.push(`${camelCaseToSnakeCase(field)} = $${valueIndex++}`);
-    values.push(val);
-  }
+  const { columnsSQL, values } = db.genUpdateParams(userData, 2);
 
   const sql = `
     UPDATE platform_users SET ${columnsSQL}, updated_at = NOW()

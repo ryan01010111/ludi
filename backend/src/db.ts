@@ -1,11 +1,9 @@
 import { Pool, PoolClient } from 'pg';
 import fs from 'fs';
 import path from 'path';
+import { camelCaseToSnakeCase } from './utils';
 
 const pool = new Pool();
-
-// TODO
-type GetClientCallback = (con: PoolClient) => Promise<any>;
 
 export default {
   async query(text: string, params: any[]) {
@@ -16,7 +14,7 @@ export default {
     return res;
   },
 
-  async getClient(cb: GetClientCallback) {
+  async getClient<F extends (con: PoolClient) => Promise<any>>(cb: F): Promise<ReturnType<F>> {
     const client = await pool.connect();
     const timeout = setTimeout(() => {
       console.error('A client has been checked out for more than 5 seconds!');
@@ -34,6 +32,17 @@ export default {
       client.release();
       clearTimeout(timeout);
     }
+  },
+
+  genUpdateParams(colToValMap: Record<string, any>, valueIdx: number = 1) {
+    const columnsSQL = [];
+    const values = [];
+    for (const [field, val] of Object.entries(colToValMap)) {
+      if (field === undefined) continue;
+      columnsSQL.push(`${camelCaseToSnakeCase(field)} = $${valueIdx++}`);
+      values.push(val);
+    }
+    return { columnsSQL, values, valueIdx };
   },
 
   disconnect() {
