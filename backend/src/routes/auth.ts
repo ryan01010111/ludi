@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import auth from '../middleware/auth';
 import * as adapter from './authAdapter';
+import redis from '../redis';
 import validator from '../validator';
 import { clearRefreshTokenCookie, setRefreshTokenCookie } from '../utils';
 import sendMail from '../mailer';
@@ -25,52 +26,42 @@ router.get('/refresh', async (req, res, next) => {
   }
   clearRefreshTokenCookie(res);
 
-  let user;
+  let tokenData;
+  let userIdStr: string;
   try {
-    user = await adapter.getUserByRefreshToken(refreshToken);
-  } catch (e) {
-    next(e);
-    return;
-  }
+    tokenData = jwt.verify(
+      refreshToken,
+      refreshTokenConfig.secret,
+    ) as jwt.JwtPayload & TokenUser;
+    userIdStr = String(tokenData.id);
 
-  if (!user) {
-    // token invalid, or expired and/or already used
+    let tokenFound: boolean;
     try {
-      const userData = jwt.verify(
-        refreshToken,
-        refreshTokenConfig.secret,
-        { ignoreExpiration: true },
-      ) as jwt.JwtPayload & TokenUser;
-      // token expired and/or already used - revoke all refresh tokens for user
+      const removedCount = await redis.sRem(userIdStr, refreshToken);
+      tokenFound = removedCount > 0;
+    } catch (e) {
+      next(e);
+      return;
+    }
+
+    if (!tokenFound) {
+      // token already used - revoke all refresh tokens for user
       try {
-        await adapter.deleteAllRefreshTokensForUser(userData.id);
+        await redis.del(userIdStr);
       } catch (e) {
         next(e);
         return;
       }
-    } catch (e) {
-      // token invalid
+      throw new Error('Refresh token already used');
     }
+  } catch (e) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
 
   /* token lookup successful */
 
-  try {
-    jwt.verify(
-      refreshToken,
-      refreshTokenConfig.secret,
-    ) as jwt.JwtPayload & TokenUser;
-  } catch (e) {
-    // token expired
-    await adapter.deleteUserRefreshToken(refreshToken)
-      .then(() => res.status(401).json({ error: 'Unauthorized' }))
-      .catch(next);
-    return;
-  }
-
-  const tokenUserData = { id: user.id, emailAddress: user.emailAddress };
+  const tokenUserData = { id: tokenData.id, emailAddress: tokenData.emailAddress };
   const accessToken = jwt.sign(
     tokenUserData,
     accessTokenConfig.secret,
@@ -79,15 +70,12 @@ router.get('/refresh', async (req, res, next) => {
   const newRefreshToken = setRefreshTokenCookie(res, tokenUserData);
 
   try {
-    await Promise.all([
-      adapter.deleteUserRefreshToken(refreshToken),
-      adapter.addUserRefreshToken(user.id, newRefreshToken),
-    ]);
+    await redis.sAdd(userIdStr, newRefreshToken);
 
     res.json({
       user: {
-        emailAddress: user.emailAddress,
-        username: user.username,
+        emailAddress: tokenData.emailAddress,
+        username: tokenData.username,
       },
       accessToken,
     });
@@ -202,7 +190,7 @@ router.post('/login', async (req, res, next) => {
     }
 
     const reqRefreshToken: string | undefined = req.cookies.refreshToken;
-    if (reqRefreshToken) await adapter.deleteUserRefreshToken(reqRefreshToken);
+    if (reqRefreshToken) await redis.sRem(String(user.id), reqRefreshToken);
     clearRefreshTokenCookie(res);
 
     const tokenUserData = { id: user.id, emailAddress: user.emailAddress };
@@ -212,7 +200,7 @@ router.post('/login', async (req, res, next) => {
       { expiresIn: accessTokenConfig.ttl },
     );
     const refreshToken = setRefreshTokenCookie(res, tokenUserData);
-    await adapter.addUserRefreshToken(user.id, refreshToken);
+    await redis.sAdd(String(user.id), refreshToken);
 
     res.json({
       user: {
@@ -237,8 +225,21 @@ router.post('/logout', async (req, res, next) => {
   }
   clearRefreshTokenCookie(res);
 
+  let userIdStr: string;
   try {
-    await adapter.deleteUserRefreshToken(refreshToken);
+    const userData = jwt.verify(
+      refreshToken,
+      refreshTokenConfig.secret,
+      { ignoreExpiration: true },
+    ) as jwt.JwtPayload & TokenUser;
+    userIdStr = String(userData.id);
+  } catch (e) {
+    res.status(401).json({ error: 'Invalid or missing token' });
+    return;
+  }
+
+  try {
+    await redis.sRem(userIdStr, refreshToken);
     res.end();
   } catch (e) {
     next(e);

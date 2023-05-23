@@ -29,6 +29,8 @@ set -e
 start_and_await postgres pg_isready
 docker compose exec -T postgres psql -U postgres -c 'CREATE DATABASE ludi;'
 
+start_and_await redis 'redis-cli ping'
+
 start_and_await mockserver 'curl http://localhost/status'
 
 docker compose $docker_compose_files_args up -d

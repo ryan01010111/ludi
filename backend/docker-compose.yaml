@@ -6,6 +6,8 @@ services:
       - POSTGRES_HOST=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+  redis:
+    image: redis:alpine
   server:
     build: .
     environment:

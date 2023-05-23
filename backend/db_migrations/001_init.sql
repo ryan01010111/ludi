@@ -20,10 +20,3 @@ CREATE TABLE platform_users (
     updated_by VARCHAR,
     updated_at TIMESTAMP
 );
-
-CREATE TABLE platform_user_refresh_tokens (
-    platform_user_id BIGINT NOT NULL REFERENCES platform_users (id),
-    refresh_token VARCHAR NOT NULL
-);
-
-CREATE UNIQUE INDEX ON platform_user_refresh_tokens (platform_user_id, refresh_token);
