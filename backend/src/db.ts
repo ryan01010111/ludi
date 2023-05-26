@@ -20,13 +20,13 @@ export default {
       console.error('A client has been checked out for more than 5 seconds!');
     }, 5000);
 
-    client.query('BEGIN;');
+    await client.query('BEGIN;');
     try {
       const result = await cb(client);
-      client.query('COMMIT;');
+      await client.query('COMMIT;');
       return result;
     } catch (e) {
-      client.query('ROLLBACK;');
+      await client.query('ROLLBACK;');
       throw e;
     } finally {
       client.release();

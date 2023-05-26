@@ -59,8 +59,6 @@ router.get('/refresh', async (req, res, next) => {
     return;
   }
 
-  /* token lookup successful */
-
   const tokenUserData = { id: tokenData.id, emailAddress: tokenData.emailAddress };
   const accessToken = jwt.sign(
     tokenUserData,
