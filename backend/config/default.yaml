@@ -8,6 +8,9 @@ refreshToken:
   secret: refreshTokenSECRET123
   ttl: 172800
 
+redis:
+  url: 'redis://redis'
+
 ses:
   endpoint: 'http://mockserver'
 

@@ -7,3 +7,6 @@ accessToken:
 refreshToken:
   secret: REFRESH_TOKEN_SECRET
   ttl: REFRESH_TOKEN_TTL
+
+redis:
+  url: REDIS_URL
